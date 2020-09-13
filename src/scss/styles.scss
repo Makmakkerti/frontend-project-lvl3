@@ -1,0 +1,11 @@
+@import "~bootstrap/scss/bootstrap";
+$body-color: white;
+$jumbo-bg: #343a40;
+
+body {
+  color: $body-color;
+}
+
+.jumbotron {
+  background-color: $jumbo-bg;
+}

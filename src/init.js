@@ -1,5 +1,5 @@
 // @ts-check
-
+import 'bootstrap';
 import Example from './Example';
 
 export default () => {
