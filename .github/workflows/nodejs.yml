@@ -43,8 +43,6 @@ jobs:
         run: make lint
 
       - name: Run tests
-        run: make test
-
         # Publish code coverage on Code Climate
         # https://github.com/Makmakkerti/frontend-project-lvl3
         uses: paambaati/codeclimate-action@v2.6.0
