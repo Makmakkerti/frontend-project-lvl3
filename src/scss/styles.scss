@@ -1,9 +1,10 @@
 @import "~bootstrap/scss/bootstrap";
-$body-color: white;
+$body-color:#212529;
 $jumbo-bg: #343a40;
 
 body {
   color: $body-color;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"
 }
 
 .jumbotron {
