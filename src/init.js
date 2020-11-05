@@ -71,34 +71,86 @@ const app = () => {
     }
     clearError();
 
-    // const addToState = () => {
+    const renderFeedsList = () => {
+      const feedsDiv = document.querySelector('.feeds');
+      feedsDiv.innerHTML = '';
 
-    // };
+      const heading = document.createElement('h2');
+      heading.textContent = 'Feeds';
+      const ul = document.createElement('ul');
+
+      state.channels.forEach((feed) => {
+        const li = document.createElement('li');
+        const head = document.createElement('h3');
+        head.textContent = feed.channelTitle;
+        const desc = document.createElement('p');
+        desc.textContent = feed.channelDescription;
+        li.appendChild(head);
+        li.appendChild(desc);
+        ul.appendChild(li);
+      });
+
+      feedsDiv.appendChild(heading);
+      feedsDiv.appendChild(ul);
+    };
+
+    const renderPostsList = () => {
+      const postsDiv = document.querySelector('.posts');
+      postsDiv.innerHTML = '';
+
+      const heading = document.createElement('h2');
+      heading.textContent = 'Posts';
+      const ul = document.createElement('ul');
+
+      state.posts.forEach((post) => {
+        const li = document.createElement('li');
+        const link = document.createElement('a');
+        link.setAttribute('href', post.link);
+        link.textContent = post.title;
+        li.appendChild(link);
+        ul.appendChild(li);
+      });
+
+      postsDiv.appendChild(heading);
+      postsDiv.appendChild(ul);
+    };
 
     const parse = (parsedXML) => {
-      // const feeds = document.querySelector('.feeds');
-      // const posts = document.querySelector('.posts');
       const channelData = parsedXML.querySelector('channel');
       const channelTitle = channelData.querySelector('title').textContent;
       const channelDescription = channelData.querySelector('description').textContent;
       const channelLink = channelData.querySelector('link').textContent;
-      console.log(channelTitle, channelDescription, channelLink);
+      const channelId = state.channels.length + 1;
+      state.channels.push({
+        channelTitle,
+        channelDescription,
+        channelLink,
+        id: channelId,
+      });
+
+      renderFeedsList();
 
       const allPosts = channelData.querySelectorAll('item');
+      let postId = 1;
       allPosts.forEach((post) => {
         const title = post.querySelector('title').textContent;
         const description = post.querySelector('description').textContent;
         const link = post.querySelector('link').textContent;
-        console.log(title, description, link);
+        state.posts.push({
+          title,
+          description,
+          link,
+          channelId,
+          id: postId,
+        });
+        postId += 1;
       });
+      renderPostsList();
     };
 
-    axios.get(inputData, {
-      crossdomain: true,
-    }).then((response) => {
+    axios.get(`https://api.allorigins.win/get?url=${inputData}`).then((response) => {
       const parser = new DOMParser();
-      const parsedXML = parser.parseFromString(response.data, 'text/xml');
-      console.log(parsedXML);
+      const parsedXML = parser.parseFromString(response.data.contents, 'text/xml');
       parse(parsedXML);
     })
       .catch((err) => {
