@@ -17,6 +17,8 @@ footer.innerHTML = footerContent;
 const app = () => {
   const state = {
     rssList: [],
+    channels: [],
+    posts: [],
   };
 
   const validate = (link) => {
@@ -38,7 +40,7 @@ const app = () => {
   obj.init();
   const form = document.querySelector('.rss-form');
   const rssInput = document.querySelector('.rss-form input');
-  const errorField = document.querySelector('#errors');
+  const errorField = document.querySelector('.feedback');
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -49,14 +51,13 @@ const app = () => {
 
     const clearError = () => {
       errorField.textContent = '';
-      errorField.classList.add('hide');
       rssInput.classList.remove('errorInput');
+      errorField.classList.remove('text-danger');
     };
 
     const showError = (err) => {
       rssInput.classList.add('errorInput');
       errorField.textContent = err;
-      errorField.classList.remove('hide');
     };
 
     if (validationError) {
@@ -70,10 +71,36 @@ const app = () => {
     }
     clearError();
 
-    axios.get(inputData)
-      .then((response) => {
-        console.log(response.data);
-      })
+    // const addToState = () => {
+
+    // };
+
+    const parse = (parsedXML) => {
+      // const feeds = document.querySelector('.feeds');
+      // const posts = document.querySelector('.posts');
+      const channelData = parsedXML.querySelector('channel');
+      const channelTitle = channelData.querySelector('title').textContent;
+      const channelDescription = channelData.querySelector('description').textContent;
+      const channelLink = channelData.querySelector('link').textContent;
+      console.log(channelTitle, channelDescription, channelLink);
+
+      const allPosts = channelData.querySelectorAll('item');
+      allPosts.forEach((post) => {
+        const title = post.querySelector('title').textContent;
+        const description = post.querySelector('description').textContent;
+        const link = post.querySelector('link').textContent;
+        console.log(title, description, link);
+      });
+    };
+
+    axios.get(inputData, {
+      crossdomain: true,
+    }).then((response) => {
+      const parser = new DOMParser();
+      const parsedXML = parser.parseFromString(response.data, 'text/xml');
+      console.log(parsedXML);
+      parse(parsedXML);
+    })
       .catch((err) => {
         console.log(err);
       });
