@@ -1,6 +1,4 @@
-// @ts-check
-
-export default class Example {
+export default class Jumbotron {
   constructor(element) {
     this.element = element;
   }
