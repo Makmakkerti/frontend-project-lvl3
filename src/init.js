@@ -1,6 +1,7 @@
 // @ts-nocheck
 import 'bootstrap';
 import * as yup from 'yup';
+import axios from 'axios';
 import Jumbotron from './jumbotron';
 
 const footerContent = `<div class="container-xl">
@@ -68,6 +69,14 @@ const app = () => {
       return;
     }
     clearError();
+
+    axios.get(inputData)
+      .then((response) => {
+        console.log(response.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
 
     state.rssList.push(inputData);
     console.log(state);
