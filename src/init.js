@@ -16,8 +16,8 @@ footer.innerHTML = footerContent;
 
 const app = () => {
   const state = {
-    rssList: [],
-    channels: [],
+    rssLinks: [],
+    feeds: [],
     posts: [],
   };
 
@@ -39,80 +39,71 @@ const app = () => {
   const obj = new Jumbotron(element);
   obj.init();
   const form = document.querySelector('.rss-form');
-  const rssInput = document.querySelector('.rss-form input');
-  const errorField = document.querySelector('.feedback');
+  const formInput = document.querySelector('.rss-form input');
+  const feedback = document.querySelector('.feedback');
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     // @ts-ignore
     const data = new FormData(e.target);
-    const inputData = data.get('url');
-    const validationError = validate(inputData);
+    const url = data.get('url');
+    const validationError = validate(url);
 
-    const clearError = () => {
-      errorField.textContent = '';
-      rssInput.classList.remove('errorInput');
-      errorField.classList.remove('text-danger');
-    };
-
-    const showError = (err) => {
-      rssInput.classList.add('errorInput');
-      errorField.textContent = err;
-    };
+    formInput.classList.remove('border', 'border-danger');
+    feedback.classList.remove('text-danger', 'text-success');
 
     if (validationError) {
-      showError(validationError);
+      formInput.classList.add('border', 'border-danger');
+      feedback.textContent = validationError;
+      feedback.classList.add('text-danger');
       return;
     }
 
-    if (state.rssList.includes(inputData)) {
-      showError('RSS already in the list!');
+    if (state.rssLinks.includes(url)) {
+      feedback.classList.add('text-danger');
+      formInput.classList.add('border', 'border-danger');
+      feedback.textContent = 'RSS already in the list!';
       return;
     }
-    clearError();
 
-    const renderFeedsList = () => {
-      const feedsDiv = document.querySelector('.feeds');
-      feedsDiv.innerHTML = '';
-
-      const heading = document.createElement('h2');
-      heading.textContent = 'Feeds';
-      const ul = document.createElement('ul');
-
-      state.channels.forEach((feed) => {
-        const li = document.createElement('li');
-        const head = document.createElement('h3');
-        head.textContent = feed.channelTitle;
-        const desc = document.createElement('p');
-        desc.textContent = feed.channelDescription;
-        li.appendChild(head);
-        li.appendChild(desc);
-        ul.appendChild(li);
-      });
-
-      feedsDiv.appendChild(heading);
-      feedsDiv.appendChild(ul);
-    };
-
-    const renderPostsList = () => {
-      const postsDiv = document.querySelector('.posts');
-      postsDiv.innerHTML = '';
+    const render = (selector) => {
+      const div = document.querySelector(`.${selector.toLowerCase()}`);
+      div.innerHTML = '';
 
       const heading = document.createElement('h2');
-      heading.textContent = 'Posts';
+      heading.textContent = selector;
       const ul = document.createElement('ul');
+      ul.classList.add('list-group');
 
-      state.posts.forEach((post) => {
-        const li = document.createElement('li');
-        const link = document.createElement('a');
-        link.setAttribute('href', post.link);
-        link.textContent = post.title;
-        li.appendChild(link);
-        ul.appendChild(li);
-      });
+      if (selector.toLowerCase() === 'feeds') {
+        ul.classList.add('mb-5');
+        state.feeds.forEach((feed) => {
+          const li = document.createElement('li');
+          const head = document.createElement('h3');
+          head.textContent = feed.channelTitle;
+          const desc = document.createElement('p');
+          desc.textContent = feed.channelDescription;
+          li.appendChild(head);
+          li.appendChild(desc);
+          li.classList.add('list-group-item');
+          ul.appendChild(li);
+        });
+      }
 
-      postsDiv.appendChild(heading);
-      postsDiv.appendChild(ul);
+      if (selector.toLowerCase() === 'posts') {
+        state.posts.forEach((post) => {
+          const li = document.createElement('li');
+          const link = document.createElement('a');
+          link.setAttribute('href', post.link);
+          link.textContent = post.title;
+          li.classList.add('list-group-item');
+          li.appendChild(link);
+          ul.appendChild(li);
+        });
+      }
+
+      div.appendChild(heading);
+      div.appendChild(ul);
     };
 
     const parse = (parsedXML) => {
@@ -120,15 +111,13 @@ const app = () => {
       const channelTitle = channelData.querySelector('title').textContent;
       const channelDescription = channelData.querySelector('description').textContent;
       const channelLink = channelData.querySelector('link').textContent;
-      const channelId = state.channels.length + 1;
-      state.channels.push({
+      const channelId = state.feeds.length + 1;
+      state.feeds.push({
         channelTitle,
         channelDescription,
         channelLink,
         id: channelId,
       });
-
-      renderFeedsList();
 
       const allPosts = channelData.querySelectorAll('item');
       let postId = 1;
@@ -145,20 +134,23 @@ const app = () => {
         });
         postId += 1;
       });
-      renderPostsList();
+      render('Feeds');
+      render('Posts');
     };
 
-    axios.get(`https://api.allorigins.win/get?url=${inputData}`).then((response) => {
+    axios.get(`https://api.allorigins.win/get?url=${url}`).then((response) => {
       const parser = new DOMParser();
       const parsedXML = parser.parseFromString(response.data.contents, 'text/xml');
       parse(parsedXML);
+      formInput.value = '';
+      feedback.textContent = 'Rss has been loaded';
+      feedback.classList.add('text-success');
     })
       .catch((err) => {
         console.log(err);
       });
 
-    state.rssList.push(inputData);
-    console.log(state);
+    state.rssLinks.push(url);
   });
 };
 
