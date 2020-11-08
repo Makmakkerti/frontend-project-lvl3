@@ -12,7 +12,6 @@ const en = {
       network: 'Network error occured',
     },
     success: 'Rss has been loaded',
-    footerText: 'created by',
   },
 };
 
