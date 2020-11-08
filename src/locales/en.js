@@ -1,10 +1,5 @@
 const en = {
   translation: {
-    key: 'Привет мир!',
-    signUpForm: {
-      name: 'Имя',
-      email: 'Email',
-    },
     errors: {
       validation: 'Must be valid url',
       inList: 'RSS already in the list',

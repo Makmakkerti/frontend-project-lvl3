@@ -11,7 +11,7 @@ export default class Jumbotron {
                                         <h1 class="display-3">RSS Reader</h1>
                                         <p class="lead">Start reading RSS today! It is easy, it is nicely.</p>
                                         <form action="" class="rss-form"><div class="form-row"><div class="col"><input autofocus="" required="" name="url" aria-label="url" class="form-control form-control-lg w-100" placeholder="RSS link"></div><div class="col-auto"><button type="submit" aria-label="add" class="btn btn-lg btn-primary px-sm-5">Add</button></div></div></form>
-                                        <p class="text-muted my-1">Example: https://ru.hexlet.io/lessons.rss</p>
+                                        <p class="text-muted my-1">Example: https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml</p>
                                         <div class="feedback text-danger"></div>
                                     </div>
                                   </div>
