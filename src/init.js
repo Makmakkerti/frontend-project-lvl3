@@ -1,12 +1,21 @@
-// @ts-nocheck
 import 'bootstrap';
+import i18next from 'i18next';
 import onChange from 'on-change';
 import * as yup from 'yup';
 import axios from 'axios';
+import en from './locales/en';
 import Jumbotron from './jumbotron';
 
+i18next.init({
+  lng: 'en',
+  debug: true,
+  resources: {
+    en,
+  },
+});
+
 const footerContent = `<div class="container-xl">
-    <div class="text-center">created by
+    <div class="text-center">${i18next.t('footerText')}
     <a href="https://www.mokienko.net" target="_blank">Mokienko.net</a>
     </div>
   </div>`;
@@ -84,9 +93,14 @@ const app = () => {
       case 'rssLinks':
         render(appState);
         break;
+
       case 'formState':
         if (value === 'invalid') {
-          console.log('Validation error!');
+          feedback.classList.remove('text-success');
+          feedback.classList.add('text-danger');
+          formInput.classList.add('border', 'border-danger');
+          formInput.disabled = false;
+          formButton.disabled = false;
         }
 
         if (value === 'sending') {
@@ -100,15 +114,17 @@ const app = () => {
           formInput.disabled = false;
           formButton.disabled = false;
           formInput.value = '';
-          feedback.textContent = 'Rss has been loaded';
+          feedback.textContent = i18next.t('success');
           feedback.classList.add('text-success');
         }
         break;
+
       case 'error':
         feedback.textContent = value;
         feedback.classList.add('text-danger');
         formInput.classList.add('border', 'border-danger');
         break;
+
       default:
         break;
     }
@@ -151,30 +167,42 @@ const app = () => {
     const schema = yup.string().trim().url().required();
 
     if (watchedState.rssLinks.includes(url)) {
-      watchedState.error = 'RSS already in the list!';
+      watchedState.error = i18next.t('errors.inList');
+      if (watchedState.formState !== 'invalid') {
+        watchedState.formState = 'invalid';
+      }
       return;
     }
 
     try {
       schema.validateSync(url);
     } catch (err) {
-      watchedState.error = err.message;
+      watchedState.error = i18next.t('errors.validation');
+      if (watchedState.formState !== 'invalid') {
+        watchedState.formState = 'invalid';
+      }
       return;
     }
-    watchedState.error = '';
 
+    watchedState.error = '';
     watchedState.formState = 'sending';
 
-    axios.get(`https://api.allorigins.win/get?url=${url}`).then((response) => {
-      const parser = new DOMParser();
-      const parsedXML = parser.parseFromString(response.data.contents, 'text/xml');
-      parse(parsedXML);
-      watchedState.rssLinks.push(url);
-      watchedState.formState = 'success';
-    })
-      .catch((err) => {
-        watchedState.error = 'Source is not correct!';
-        console.log(err);
+    axios.get(`https://api.allorigins.win/get?url=${url}`)
+      .then((response) => {
+        try {
+          const parser = new DOMParser();
+          const parsedXML = parser.parseFromString(response.data.contents, 'text/xml');
+          parse(parsedXML);
+          watchedState.rssLinks.push(url);
+          watchedState.formState = 'success';
+        } catch (error) {
+          watchedState.formState = 'invalid';
+          watchedState.error = i18next.t('errors.invalidRss');
+        }
+      })
+      .catch(() => {
+        watchedState.formState = 'invalid';
+        watchedState.error = i18next.t('errors.network');
       });
   });
 };
