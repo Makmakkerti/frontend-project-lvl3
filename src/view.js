@@ -43,30 +43,9 @@ const renderForm = (status, elements) => {
   }
 };
 
-const render = (state) => {
-  const feeds = document.querySelector('.feeds');
-  const posts = document.querySelector('.posts');
-  feeds.innerHTML = '';
+const renderPosts = (state, elements) => {
+  const { posts } = elements;
   posts.innerHTML = '';
-
-  const feedsHeading = document.createElement('h2');
-  feedsHeading.textContent = 'Feeds';
-  feeds.appendChild(feedsHeading);
-  const feedList = document.createElement('ul');
-  feedList.classList.add('list-group', 'mb-5');
-
-  state.feeds.forEach((feed) => {
-    const feedItem = document.createElement('li');
-    const head = document.createElement('h3');
-    head.textContent = feed.channelTitle;
-    const desc = document.createElement('p');
-    desc.textContent = feed.channelDescription;
-    feedItem.appendChild(head);
-    feedItem.appendChild(desc);
-    feedItem.classList.add('list-group-item');
-    feedList.appendChild(feedItem);
-  });
-  feeds.appendChild(feedList);
 
   const postsHeading = document.createElement('h3');
   postsHeading.textContent = 'Posts';
@@ -86,6 +65,32 @@ const render = (state) => {
   posts.appendChild(postList);
 };
 
+const render = (state, elements) => {
+  const { feeds } = elements;
+  feeds.innerHTML = '';
+
+  const feedsHeading = document.createElement('h2');
+  feedsHeading.textContent = 'Feeds';
+  feeds.appendChild(feedsHeading);
+  const feedList = document.createElement('ul');
+  feedList.classList.add('list-group', 'mb-5');
+
+  state.feeds.forEach((feed) => {
+    const feedItem = document.createElement('li');
+    const head = document.createElement('h3');
+    head.textContent = feed.title;
+    const desc = document.createElement('p');
+    desc.textContent = feed.description;
+    feedItem.appendChild(head);
+    feedItem.appendChild(desc);
+    feedItem.classList.add('list-group-item');
+    feedList.appendChild(feedItem);
+  });
+  feeds.appendChild(feedList);
+
+  renderPosts(state, elements);
+};
+
 const initView = (state, elements) => {
   const jumbo = new Jumbotron(elements.point);
   jumbo.init();
@@ -99,14 +104,15 @@ const initView = (state, elements) => {
 
   const watchedState = onChange(state, (path, value) => {
     switch (path) {
-      case 'rssLinks':
-        render(state);
+      case 'feeds':
+        render(state, elements);
         break;
-
       case 'formState':
         renderForm(value, elements);
         break;
-
+      case 'posts':
+        renderPosts(state, elements);
+        break;
       case 'error':
         elements.feedback.textContent = value;
         elements.feedback.classList.add('text-danger');
