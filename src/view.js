@@ -65,10 +65,6 @@ const renderPosts = (state, elements) => {
   posts.prepend(postList);
 };
 
-// const updatePosts = (state, elements) => {
-
-// };
-
 const render = (state, elements) => {
   const { feeds } = elements;
   feeds.innerHTML = '';

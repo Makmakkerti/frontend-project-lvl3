@@ -111,9 +111,9 @@ const app = () => {
         try {
           const data = parse(response.data.contents, url);
           data.posts.forEach((post) => {
-            watchedState.posts.push(post);
+            watchedState.posts.unshift(post);
           });
-          watchedState.feeds.push(data.feed);
+          watchedState.feeds.unshift(data.feed);
           watchedState.formState = 'success';
         } catch (error) {
           watchedState.formState = 'invalid';
