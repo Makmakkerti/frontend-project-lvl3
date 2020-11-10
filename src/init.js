@@ -94,8 +94,8 @@ const app = () => {
       axios.get(`https://api.allorigins.win/get?url=${feed.url}`)
         .then((response) => parse(response.data.contents, feed.url))
         .then((data) => {
-          data.posts.forEach((post) => {
-            watchedState.posts.push(post);
+          data.posts.reverse().forEach((post) => {
+            watchedState.posts.unshift(post);
           });
         })
         .catch((err) => {

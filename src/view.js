@@ -59,11 +59,15 @@ const renderPosts = (state, elements) => {
     link.setAttribute('href', post.link);
     link.textContent = post.title;
     postItem.classList.add('list-group-item');
-    postItem.appendChild(link);
+    postItem.prepend(link);
     posts.appendChild(postItem);
   });
-  posts.appendChild(postList);
+  posts.prepend(postList);
 };
+
+// const updatePosts = (state, elements) => {
+
+// };
 
 const render = (state, elements) => {
   const { feeds } = elements;
@@ -110,7 +114,7 @@ const initView = (state, elements) => {
       case 'formState':
         renderForm(value, elements);
         break;
-      case 'posts':
+      case 'timeoutID':
         renderPosts(state, elements);
         break;
       case 'error':
