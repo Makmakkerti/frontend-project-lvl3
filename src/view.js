@@ -2,20 +2,6 @@
 /* eslint-disable no-param-reassign */
 import i18next from 'i18next';
 import onChange from 'on-change';
-import Jumbotron from './jumbotron';
-
-const renderFooter = (elements) => {
-  const footer = document.createElement('footer');
-  const footerContent = `<div class="container-xl">
-    <div class="text-center">
-      <a href="https://www.mokienko.net" target="_blank">Mokienko.net</a>
-    </div>
-  </div>`;
-
-  footer.classList.add('footer', 'border-top', 'py-3', 'mt-5');
-  footer.innerHTML = footerContent;
-  elements.body.appendChild(footer);
-};
 
 const renderForm = (status, elements) => {
   switch (status) {
@@ -92,9 +78,6 @@ const render = (state, elements) => {
 };
 
 const initView = (state, elements) => {
-  const jumbo = new Jumbotron(elements.point);
-  jumbo.init();
-
   elements.form = document.querySelector('.rss-form');
   elements.formInput = document.querySelector('.rss-form input');
   elements.formButton = document.querySelector('.rss-form button');
@@ -123,7 +106,6 @@ const initView = (state, elements) => {
         break;
     }
   });
-  renderFooter(elements);
   return watchedState;
 };
 
