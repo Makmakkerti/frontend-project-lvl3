@@ -22,11 +22,7 @@ const app = () => {
     timeoutID: null,
   };
 
-  const elements = {
-    body: document.querySelector('body'),
-    point: document.querySelector('#point'),
-  };
-  const watchedState = initView(appState, elements);
+  const watchedState = initView(appState);
 
   const parseFeed = (feed, url) => {
     const existingFeed = watchedState.feeds.filter((el) => el.url === url);

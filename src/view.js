@@ -3,7 +3,16 @@
 import i18next from 'i18next';
 import onChange from 'on-change';
 
-const renderForm = (status, elements) => {
+const elements = {
+  form: document.querySelector('.rss-form'),
+  formInput: document.querySelector('.rss-form input'),
+  formButton: document.querySelector('.rss-form button'),
+  feedback: document.querySelector('.feedback'),
+  feeds: document.querySelector('.feeds'),
+  posts: document.querySelector('.posts'),
+};
+
+const renderForm = (status) => {
   switch (status) {
     case 'invalid':
       elements.feedback.classList.remove('text-success');
@@ -29,7 +38,7 @@ const renderForm = (status, elements) => {
   }
 };
 
-const renderPosts = (state, elements) => {
+const renderPosts = (state) => {
   const { posts } = elements;
   posts.innerHTML = '';
 
@@ -51,7 +60,7 @@ const renderPosts = (state, elements) => {
   posts.prepend(postList);
 };
 
-const render = (state, elements) => {
+const render = (state) => {
   const { feeds } = elements;
   feeds.innerHTML = '';
 
@@ -73,28 +82,20 @@ const render = (state, elements) => {
     feedList.appendChild(feedItem);
   });
   feeds.appendChild(feedList);
-
   renderPosts(state, elements);
 };
 
-const initView = (state, elements) => {
-  elements.form = document.querySelector('.rss-form');
-  elements.formInput = document.querySelector('.rss-form input');
-  elements.formButton = document.querySelector('.rss-form button');
-  elements.feedback = document.querySelector('.feedback');
-  elements.feeds = document.querySelector('.feeds');
-  elements.posts = document.querySelector('.posts');
-
+const initView = (state) => {
   const watchedState = onChange(state, (path, value) => {
     switch (path) {
       case 'feeds':
-        render(state, elements);
+        render(state);
         break;
       case 'formState':
-        renderForm(value, elements);
+        renderForm(value);
         break;
       case 'timeoutID':
-        renderPosts(state, elements);
+        renderPosts(state);
         break;
       case 'error':
         elements.feedback.textContent = value;
