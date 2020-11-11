@@ -15,6 +15,7 @@ i18next.init({
 
 const app = () => {
   const appState = {
+    feedUrls: [],
     feeds: [],
     posts: [],
     error: '',
@@ -23,6 +24,7 @@ const app = () => {
   };
 
   const watchedState = initView(appState);
+  const UPDATE_TIME = 5000;
 
   const parseFeed = (feed, url) => {
     const existingFeed = watchedState.feeds.filter((el) => el.url === url);
@@ -98,7 +100,7 @@ const app = () => {
           console.log(err);
         });
     });
-    watchedState.timeoutID = setTimeout(updatePosts, 5000);
+    watchedState.timeoutID = setTimeout(updatePosts, UPDATE_TIME);
   };
 
   const sendForm = (url) => {
@@ -109,6 +111,7 @@ const app = () => {
           data.posts.forEach((post) => {
             watchedState.posts.unshift(post);
           });
+          watchedState.feedUrls.push(url);
           watchedState.feeds.unshift(data.feed);
           watchedState.formState = 'success';
         } catch (error) {
@@ -131,21 +134,27 @@ const app = () => {
     e.preventDefault();
     const data = new FormData(e.target);
     const url = data.get('url').trim();
-    const schema = yup.string().trim().url().required();
-    const inList = watchedState.feeds.filter((feed) => feed.url === url);
-
-    if (inList.length) {
-      watchedState.error = i18next.t('errors.inList');
-      watchedState.formState = 'invalid';
-      return;
-    }
+    const schema = yup.string()
+      .trim()
+      .url()
+      .required()
+      .notOneOf(watchedState.feedUrls);
 
     try {
       schema.validateSync(url);
     } catch (err) {
-      watchedState.error = i18next.t('errors.validation');
       watchedState.formState = 'invalid';
-      return;
+      switch (err.type) {
+        case 'url':
+          watchedState.error = i18next.t('errors.validation');
+          return;
+        case 'notOneOf':
+          watchedState.error = i18next.t('errors.inList');
+          return;
+        default:
+          watchedState.error = i18next.t('errors.validation');
+          return;
+      }
     }
 
     watchedState.error = '';
