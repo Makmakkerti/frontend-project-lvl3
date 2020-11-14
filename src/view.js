@@ -1,5 +1,3 @@
-/* eslint-disable no-shadow */
-/* eslint-disable no-param-reassign */
 import i18next from 'i18next';
 import onChange from 'on-change';
 
@@ -54,10 +52,10 @@ const renderPosts = (state) => {
     link.setAttribute('href', post.link);
     link.textContent = post.title;
     postItem.classList.add('list-group-item');
-    postItem.prepend(link);
-    posts.appendChild(postItem);
+    postItem.appendChild(link);
+    postList.prepend(postItem);
   });
-  posts.prepend(postList);
+  posts.appendChild(postList);
 };
 
 const render = (state) => {
@@ -94,8 +92,10 @@ const initView = (state) => {
       case 'formState':
         renderForm(value);
         break;
-      case 'timeoutID':
-        renderPosts(state);
+      case 'updated':
+        if (state.updated) {
+          renderPosts(state);
+        }
         break;
       case 'error':
         elements.feedback.textContent = value;
