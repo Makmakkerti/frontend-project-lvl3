@@ -5,15 +5,15 @@ import axios from 'axios';
 import initView from './view';
 import en from './locales/en';
 
-i18next.init({
-  lng: 'en',
-  debug: false,
-  resources: {
-    en,
-  },
-});
-
 const app = () => {
+  i18next.init({
+    lng: 'en',
+    debug: false,
+    resources: {
+      en,
+    },
+  });
+
   const appState = {
     feedUrls: [],
     feeds: [],
@@ -154,14 +154,13 @@ const app = () => {
           watchedState.formState = 'invalid';
           watchedState.error = i18next.t('errors.invalidRss');
         } else {
-          console.log(err.message);
           watchedState.formState = 'invalid';
           watchedState.error = i18next.t('errors.network');
         }
       });
   };
 
-  const form = document.querySelector('.rss-form');
+  const form = document.querySelector('form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const data = new FormData(e.target);
