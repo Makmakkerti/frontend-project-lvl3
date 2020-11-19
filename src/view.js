@@ -1,42 +1,55 @@
+/* eslint-disable no-param-reassign */
 import i18next from 'i18next';
 import onChange from 'on-change';
 
-const elements = {
-  form: document.querySelector('.rss-form'),
-  formInput: document.querySelector('.rss-form input'),
-  formButton: document.querySelector('.rss-form button'),
-  feedback: document.querySelector('.feedback'),
-  feeds: document.querySelector('.feeds'),
-  posts: document.querySelector('.posts'),
+const clearForm = (elements) => {
+  elements.formInput.classList.remove('border', 'border-danger');
+  elements.formInput.disabled = false;
+  elements.formButton.disabled = false;
 };
 
-const renderForm = (status) => {
+const renderForm = (status, elements) => {
+  clearForm(elements);
   switch (status) {
-    case 'invalid':
+    case 'invalidUrl':
       elements.feedback.classList.remove('text-success');
       elements.feedback.classList.add('text-danger');
       elements.formInput.classList.add('border', 'border-danger');
-      elements.formInput.disabled = false;
-      elements.formButton.disabled = false;
+      elements.feedback.textContent = i18next.t('errors.validation');
+      break;
+    case 'invalidRss':
+      elements.feedback.classList.remove('text-success');
+      elements.feedback.classList.add('text-danger');
+      elements.formInput.classList.add('border', 'border-danger');
+      elements.feedback.textContent = i18next.t('errors.invalidRss');
+      break;
+    case 'inList':
+      elements.feedback.classList.remove('text-success');
+      elements.feedback.classList.add('text-danger');
+      elements.formInput.classList.add('border', 'border-danger');
+      elements.feedback.textContent = i18next.t('errors.inList');
       break;
     case 'sending':
-      elements.feedback.classList.remove('text-danger');
-      elements.formInput.classList.remove('border', 'border-danger');
       elements.formInput.disabled = true;
       elements.formButton.disabled = true;
       break;
     case 'success':
-      elements.formInput.disabled = false;
-      elements.formButton.disabled = false;
+      elements.feedback.classList.remove('text-danger');
       elements.formInput.value = '';
-      elements.feedback.textContent = i18next.t('success');
       elements.feedback.classList.add('text-success');
+      elements.feedback.textContent = i18next.t('success');
+      break;
+    case 'unexpectedError':
+      elements.feedback.classList.remove('text-success');
+      elements.feedback.classList.add('text-danger');
+      elements.formInput.classList.add('border', 'border-danger');
+      elements.feedback.textContent = i18next.t('errors.unexpected');
       break;
     default: break;
   }
 };
 
-const renderPosts = (state) => {
+const renderPosts = (state, elements) => {
   const { posts } = elements;
   posts.innerHTML = '';
 
@@ -58,7 +71,7 @@ const renderPosts = (state) => {
   posts.appendChild(postList);
 };
 
-const render = (state) => {
+const render = (state, elements) => {
   const { feeds } = elements;
   feeds.innerHTML = '';
 
@@ -84,23 +97,32 @@ const render = (state) => {
 };
 
 const initView = (state) => {
+  const elements = {
+    form: document.querySelector('.rss-form'),
+    formInput: document.querySelector('.rss-form input'),
+    formButton: document.querySelector('.rss-form button'),
+    feedback: document.querySelector('.feedback'),
+    feeds: document.querySelector('.feeds'),
+    posts: document.querySelector('.posts'),
+  };
+
   const watchedState = onChange(state, (path, value) => {
     switch (path) {
       case 'feeds':
-        render(state);
+        render(state, elements);
         break;
       case 'formState':
-        renderForm(value);
+        renderForm(value, elements);
         break;
-      case 'updated':
-        if (state.updated) {
-          renderPosts(state);
+      case 'networkError':
+        if (value) {
+          elements.feedback.textContent = i18next.t('errors.network');
+          elements.feedback.classList.add('text-danger');
+          elements.feedback.classList.remove('text-success');
+        } else {
+          elements.feedback.textContent = '';
+          elements.feedback.classList.remove('text-danger');
         }
-        break;
-      case 'error':
-        elements.feedback.textContent = value;
-        elements.feedback.classList.add('text-danger');
-        elements.formInput.classList.add('border', 'border-danger');
         break;
 
       default:
