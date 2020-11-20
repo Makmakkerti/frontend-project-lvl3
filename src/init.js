@@ -3,6 +3,7 @@ import 'bootstrap';
 import i18next from 'i18next';
 import * as yup from 'yup';
 import axios from 'axios';
+import _ from 'lodash';
 import initView from './view';
 import en from './locales/en';
 import parse from './parser';
@@ -26,44 +27,30 @@ const app = () => {
   const watchedState = initView(appState);
   const UPDATE_TIME = 5000;
 
-  const assignFeedId = (data) => {
-    const { feed } = data;
-    const existingFeed = watchedState.feeds.filter((el) => el.url === data.feed.url);
-    feed.id = existingFeed.length > 0 ? existingFeed[0].id : watchedState.feeds.length + 1;
+  const getFeedByURL = (url) => watchedState.feeds.filter((el) => el.url === url)[0];
+
+  const assignFeedID = (feed) => {
+    const existingFeed = getFeedByURL(feed.url);
+    feed.id = existingFeed ? existingFeed.id : _.uniqueId('feed_');
+    feed.pending = false;
     return feed;
   };
 
-  const assignPostIds = (data) => {
-    const feedId = data.feed.id;
+  const filterNewPosts = (posts, feedId) => {
     const feedPosts = watchedState.posts.filter((el) => el.feedId === feedId);
-    const newPosts = [];
-    let id;
-
-    if (feedPosts.length < 1) {
-      id = 1;
-      data.posts.forEach((post) => {
-        newPosts.unshift({ ...post, id, feedId });
-        id += 1;
-      });
-      return newPosts;
-    }
-
-    const oldPostLinks = [];
-    feedPosts.forEach((post) => oldPostLinks.push(post.link));
-
-    data.posts.forEach((post) => {
-      const oldPost = oldPostLinks.includes(post.link);
-      if (!oldPost) {
-        newPosts.unshift({ ...post, id, feedId });
-      }
-    });
+    const oldPostLinks = feedPosts.map((post) => post.link);
+    const newPosts = posts.filter((item) => !oldPostLinks.includes(item.link));
     return newPosts;
   };
 
-  const filter = (data) => {
-    const feed = assignFeedId(data);
-    const posts = assignPostIds(data);
-    return { feed, posts };
+  const assignPostsID = (posts, feedId) => {
+    const postsWithID = posts
+      .reverse()
+      .map((post) => {
+        const id = _.uniqueId('post_');
+        return { ...post, id, feedId };
+      });
+    return postsWithID;
   };
 
   const updatePosts = () => {
@@ -74,8 +61,10 @@ const app = () => {
         .then((response) => {
           watchedState.networkError = false;
           const data = parse(response.data.contents, feed.url);
-          const filtered = filter(data);
-          watchedState.posts.push(...filtered.posts);
+          const currentFeed = getFeedByURL(feed.url);
+          const newPosts = filterNewPosts(data.posts, currentFeed.id);
+          const newPostsWithID = assignPostsID(newPosts, currentFeed.id);
+          watchedState.posts.push(...newPostsWithID);
           feed.pending = false;
         })
         .catch(() => {
@@ -90,15 +79,12 @@ const app = () => {
     axios.get(`https://api.allorigins.win/get?url=${url}`)
       .then((response) => {
         const data = parse(response.data.contents, url);
-        const filtered = filter(data);
+        const feed = assignFeedID(data.feed);
+        const posts = assignPostsID(data.posts, feed.id);
 
-        watchedState.posts.push(...filtered.posts);
-        watchedState.feeds.unshift(url);
+        watchedState.feeds.unshift(feed);
+        watchedState.posts.push(...posts);
         watchedState.formState = 'success';
-
-        if (watchedState.feeds.length === 1) {
-          setTimeout(updatePosts, UPDATE_TIME);
-        }
       })
       .catch((err) => {
         switch (err.message) {
@@ -110,6 +96,11 @@ const app = () => {
             break;
           default:
             watchedState.formState = 'unexpectedError';
+        }
+      })
+      .finally(() => {
+        if (watchedState.feeds.length === 1) {
+          setTimeout(updatePosts, UPDATE_TIME);
         }
       });
   };

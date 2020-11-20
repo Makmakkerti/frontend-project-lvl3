@@ -8,7 +8,7 @@ const clearForm = (elements) => {
   elements.formButton.disabled = false;
 };
 
-const showErrorFeedback = (message, elements) => {
+const showFormError = (message, elements) => {
   elements.feedback.classList.remove('text-success');
   elements.feedback.classList.add('text-danger');
   elements.formInput.classList.add('border', 'border-danger');
@@ -19,13 +19,13 @@ const renderForm = (status, elements) => {
   clearForm(elements);
   switch (status) {
     case 'invalidUrl':
-      showErrorFeedback('errors.validation', elements);
+      showFormError('errors.validation', elements);
       break;
     case 'invalidRss':
-      showErrorFeedback('errors.invalidRss', elements);
+      showFormError('errors.invalidRss', elements);
       break;
     case 'inList':
-      showErrorFeedback('errors.inList', elements);
+      showFormError('errors.inList', elements);
       break;
     case 'sending':
       elements.formInput.disabled = true;
@@ -38,7 +38,7 @@ const renderForm = (status, elements) => {
       elements.feedback.textContent = i18next.t('success');
       break;
     case 'unexpectedError':
-      showErrorFeedback('errors.unexpected', elements);
+      showFormError('errors.unexpected', elements);
       break;
     default: break;
   }
@@ -66,7 +66,7 @@ const renderPosts = (state, elements) => {
   posts.appendChild(postList);
 };
 
-const render = (state, elements) => {
+const renderFeeds = (state, elements) => {
   const { feeds } = elements;
   feeds.innerHTML = '';
 
@@ -88,7 +88,6 @@ const render = (state, elements) => {
     feedList.appendChild(feedItem);
   });
   feeds.appendChild(feedList);
-  renderPosts(state, elements);
 };
 
 const initView = (state) => {
@@ -104,10 +103,13 @@ const initView = (state) => {
   const watchedState = onChange(state, (path, value) => {
     switch (path) {
       case 'feeds':
-        render(state, elements);
+        renderFeeds(state, elements);
         break;
       case 'formState':
         renderForm(value, elements);
+        break;
+      case 'posts':
+        renderPosts(state, elements);
         break;
       case 'networkError':
         if (value) {
