@@ -93,7 +93,7 @@ const app = () => {
         const filtered = filter(data);
 
         watchedState.posts.push(...filtered.posts);
-        watchedState.feeds.unshift(filtered.feed);
+        watchedState.feeds.unshift(url);
         watchedState.formState = 'success';
 
         if (watchedState.feeds.length === 1) {

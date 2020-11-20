@@ -8,26 +8,24 @@ const clearForm = (elements) => {
   elements.formButton.disabled = false;
 };
 
+const showErrorFeedback = (message, elements) => {
+  elements.feedback.classList.remove('text-success');
+  elements.feedback.classList.add('text-danger');
+  elements.formInput.classList.add('border', 'border-danger');
+  elements.feedback.textContent = i18next.t(message);
+};
+
 const renderForm = (status, elements) => {
   clearForm(elements);
   switch (status) {
     case 'invalidUrl':
-      elements.feedback.classList.remove('text-success');
-      elements.feedback.classList.add('text-danger');
-      elements.formInput.classList.add('border', 'border-danger');
-      elements.feedback.textContent = i18next.t('errors.validation');
+      showErrorFeedback('errors.validation', elements);
       break;
     case 'invalidRss':
-      elements.feedback.classList.remove('text-success');
-      elements.feedback.classList.add('text-danger');
-      elements.formInput.classList.add('border', 'border-danger');
-      elements.feedback.textContent = i18next.t('errors.invalidRss');
+      showErrorFeedback('errors.invalidRss', elements);
       break;
     case 'inList':
-      elements.feedback.classList.remove('text-success');
-      elements.feedback.classList.add('text-danger');
-      elements.formInput.classList.add('border', 'border-danger');
-      elements.feedback.textContent = i18next.t('errors.inList');
+      showErrorFeedback('errors.inList', elements);
       break;
     case 'sending':
       elements.formInput.disabled = true;
@@ -40,10 +38,7 @@ const renderForm = (status, elements) => {
       elements.feedback.textContent = i18next.t('success');
       break;
     case 'unexpectedError':
-      elements.feedback.classList.remove('text-success');
-      elements.feedback.classList.add('text-danger');
-      elements.formInput.classList.add('border', 'border-danger');
-      elements.feedback.textContent = i18next.t('errors.unexpected');
+      showErrorFeedback('errors.unexpected', elements);
       break;
     default: break;
   }

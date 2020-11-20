@@ -8,7 +8,6 @@ const parseFeed = (feed, url) => {
     description,
     link,
     url,
-    pending: false,
   };
 };
 
