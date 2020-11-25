@@ -8,37 +8,47 @@ const clearForm = (elements) => {
   elements.formButton.disabled = false;
 };
 
-const showFormError = (message, elements) => {
+const clearFeedback = (elements) => {
+  elements.feedback.classList.remove('text-danger', 'text-success');
+  elements.feedback.textContent = '';
+};
+
+const showFeedbackError = (message, elements) => {
   elements.feedback.classList.remove('text-success');
   elements.feedback.classList.add('text-danger');
-  elements.formInput.classList.add('border', 'border-danger');
-  elements.feedback.textContent = i18next.t(message);
+  elements.feedback.textContent = i18next.t(`errors.${message}`);
+};
+
+const disableForm = (elements) => {
+  elements.formInput.disabled = true;
+  elements.formButton.disabled = true;
+};
+
+const enableForm = (elements) => {
+  elements.formInput.disabled = false;
+  elements.formButton.disabled = false;
 };
 
 const renderForm = (status, elements) => {
   clearForm(elements);
   switch (status) {
-    case 'invalidUrl':
-      showFormError('errors.validation', elements);
-      break;
-    case 'invalidRss':
-      showFormError('errors.invalidRss', elements);
-      break;
-    case 'inList':
-      showFormError('errors.inList', elements);
-      break;
-    case 'sending':
-      elements.formInput.disabled = true;
-      elements.formButton.disabled = true;
+    case 'loading':
+      disableForm(elements);
+      clearFeedback(elements);
       break;
     case 'success':
-      elements.feedback.classList.remove('text-danger');
+      clearFeedback(elements);
       elements.formInput.value = '';
       elements.feedback.classList.add('text-success');
       elements.feedback.textContent = i18next.t('success');
       break;
+    case 'failed':
+      enableForm(elements);
+      showFeedbackError('invalidRss', elements);
+      break;
     case 'unexpectedError':
-      showFormError('errors.unexpected', elements);
+      clearFeedback(elements);
+      showFeedbackError('unexpected', elements);
       break;
     default: break;
   }
@@ -105,20 +115,29 @@ const initView = (state) => {
       case 'feeds':
         renderFeeds(state, elements);
         break;
-      case 'formState':
-        renderForm(value, elements);
-        break;
       case 'posts':
         renderPosts(state, elements);
         break;
-      case 'networkError':
+      case 'form.error':
         if (value) {
-          elements.feedback.textContent = i18next.t('errors.network');
-          elements.feedback.classList.add('text-danger');
-          elements.feedback.classList.remove('text-success');
+          elements.formInput.classList.add('border', 'border-danger');
+          showFeedbackError(value, elements);
         } else {
-          elements.feedback.textContent = '';
-          elements.feedback.classList.remove('text-danger');
+          clearForm(elements);
+          clearFeedback(elements);
+        }
+        break;
+      case 'network.status':
+        renderForm(value, elements);
+        break;
+      case 'network.error':
+        if (value) {
+          showFeedbackError('network', elements);
+        } else {
+          clearFeedback(elements);
+          if (state.form.error) {
+            showFeedbackError(state.form.error, elements);
+          }
         }
         break;
 

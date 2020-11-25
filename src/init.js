@@ -17,14 +17,20 @@ const app = () => {
     },
   });
 
-  const appState = {
+  const state = {
     feeds: [],
     posts: [],
-    formState: '',
-    networkError: false,
+    form: {
+      state: 'filling',
+      error: null,
+    },
+    network: {
+      status: 'idle',
+      error: false,
+    },
   };
 
-  const watchedState = initView(appState);
+  const watchedState = initView(state);
   const UPDATE_TIME = 5000;
 
   const getFeedByURL = (url) => watchedState.feeds.filter((el) => el.url === url)[0];
@@ -54,19 +60,18 @@ const app = () => {
   };
 
   const updatePosts = (feed) => {
-    if (feed.pending) return;
+    if (!feed || feed.pending) return;
     feed.pending = true;
     axios.get(`https://api.allorigins.win/get?url=${feed.url}`)
       .then((response) => {
-        watchedState.networkError = false;
+        watchedState.network.error = false;
         const data = parse(response.data.contents, feed.url);
         const newPosts = getNewPosts(data.posts, feed.id);
-        console.log(newPosts);
         watchedState.posts.push(...newPosts);
         feed.pending = false;
       })
       .catch(() => {
-        watchedState.networkError = true;
+        watchedState.network.error = true;
         feed.pending = false;
       })
       .finally(() => {
@@ -82,18 +87,20 @@ const app = () => {
         const posts = assignPostsID(data.posts, feed.id);
         watchedState.feeds.unshift(feed);
         watchedState.posts.push(...posts);
-        watchedState.formState = 'success';
+        watchedState.network.status = 'success';
       })
       .catch((err) => {
         switch (err.message) {
           case 'Network Error':
-            watchedState.networkError = true;
+            watchedState.network.status = 'failed';
             break;
           case 'Rss Error':
-            watchedState.formState = 'invalidRss';
+            watchedState.network.status = 'failed';
+            watchedState.form.error = 'invalidRss';
             break;
           default:
-            watchedState.formState = 'unexpectedError';
+            watchedState.network.status = 'failed';
+            watchedState.form.error = 'unexpectedError';
         }
       })
       .finally(() => {
@@ -117,20 +124,22 @@ const app = () => {
     try {
       schema.validateSync(url);
     } catch (err) {
-      watchedState.formState = 'invalid';
+      watchedState.form.state = 'invalid';
       switch (err.type) {
         case 'url':
-          watchedState.formState = 'invalidUrl';
+          watchedState.form.error = 'invalidUrl';
           return;
         case 'notOneOf':
-          watchedState.formState = 'inList';
+          watchedState.form.error = 'inList';
           return;
         default:
-          watchedState.formState = 'unexpectedError';
+          watchedState.form.error = 'unexpectedError';
           return;
       }
     }
-    watchedState.formState = 'sending';
+    watchedState.form.error = null;
+    watchedState.network.status = 'loading';
+    watchedState.form.state = 'valid';
     sendForm(url);
   });
 };
