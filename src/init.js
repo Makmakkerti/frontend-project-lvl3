@@ -81,7 +81,7 @@ const app = () => {
         watchedState.feeds.unshift(feed);
         watchedState.posts.push(...posts);
         watchedState.network.status = 'success';
-        setTimeout(updatePosts, UPDATE_TIME, url);
+        setTimeout(updatePosts, UPDATE_TIME, feed);
       })
       .catch((err) => {
         switch (err.message) {
