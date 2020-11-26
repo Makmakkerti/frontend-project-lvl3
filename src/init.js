@@ -33,11 +33,8 @@ const app = () => {
   const watchedState = initView(state);
   const UPDATE_TIME = 5000;
 
-  const getFeedByURL = (url) => watchedState.feeds.filter((el) => el.url === url)[0];
-
   const assignFeedID = (feed) => {
     feed.id = _.uniqueId('feed_');
-    feed.pending = false;
     return feed;
   };
 
@@ -60,19 +57,15 @@ const app = () => {
   };
 
   const updatePosts = (feed) => {
-    if (!feed || feed.pending) return;
-    feed.pending = true;
     axios.get(`https://api.allorigins.win/get?url=${feed.url}`)
       .then((response) => {
         watchedState.network.error = false;
         const data = parse(response.data.contents, feed.url);
         const newPosts = getNewPosts(data.posts, feed.id);
         watchedState.posts.push(...newPosts);
-        feed.pending = false;
       })
       .catch(() => {
         watchedState.network.error = true;
-        feed.pending = false;
       })
       .finally(() => {
         setTimeout(updatePosts, UPDATE_TIME, feed);
@@ -88,6 +81,7 @@ const app = () => {
         watchedState.feeds.unshift(feed);
         watchedState.posts.push(...posts);
         watchedState.network.status = 'success';
+        setTimeout(updatePosts, UPDATE_TIME, url);
       })
       .catch((err) => {
         switch (err.message) {
@@ -102,10 +96,6 @@ const app = () => {
             watchedState.network.status = 'failed';
             watchedState.form.error = 'unexpectedError';
         }
-      })
-      .finally(() => {
-        const feed = getFeedByURL(url);
-        setTimeout(updatePosts, UPDATE_TIME, feed);
       });
   };
 
