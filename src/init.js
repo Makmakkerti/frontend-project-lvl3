@@ -4,6 +4,7 @@ import i18next from 'i18next';
 import * as yup from 'yup';
 import axios from 'axios';
 import _ from 'lodash';
+import config from './config';
 import initView from './view';
 import en from './locales/en';
 import parse from './parser';
@@ -57,39 +58,45 @@ const app = () => {
   };
 
   const updatePosts = (feed) => {
-    axios.get(`https://api.allorigins.win/get?url=${feed.url}`)
+    const url = config.proxyURL + feed.url;
+    axios.get(url)
       .then((response) => {
-        watchedState.network.error = false;
         const data = parse(response.data.contents, feed.url);
         const newPosts = getNewPosts(data.posts, feed.id);
         watchedState.posts.push(...newPosts);
       })
-      .catch(() => {
-        watchedState.network.error = true;
+      .catch((err) => {
+        console.log(err);
       })
       .finally(() => {
         setTimeout(updatePosts, UPDATE_TIME, feed);
       });
   };
 
-  const sendForm = (url) => {
-    axios.get(`https://api.allorigins.win/get?url=${url}`)
+  const addFeed = (feedURL) => {
+    watchedState.network.status = 'loading';
+    watchedState.network.error = false;
+    const url = config.proxyURL + feedURL;
+    axios.get(url)
       .then((response) => {
-        const data = parse(response.data.contents, url);
+        const data = parse(response.data.contents, feedURL);
         const feed = assignFeedID(data.feed);
         const posts = assignPostsID(data.posts, feed.id);
         watchedState.feeds.unshift(feed);
         watchedState.posts.push(...posts);
         watchedState.network.status = 'success';
+
+        watchedState.form.state = 'filling';
         setTimeout(updatePosts, UPDATE_TIME, feed);
       })
       .catch((err) => {
         switch (err.message) {
           case 'Network Error':
-            watchedState.network.status = 'failed';
+            watchedState.network.error = true;
             break;
           case 'Rss Error':
             watchedState.network.status = 'failed';
+            watchedState.form.state = 'invalid';
             watchedState.form.error = 'invalidRss';
             break;
           default:
@@ -115,22 +122,12 @@ const app = () => {
       schema.validateSync(url);
     } catch (err) {
       watchedState.form.state = 'invalid';
-      switch (err.type) {
-        case 'url':
-          watchedState.form.error = 'invalidUrl';
-          return;
-        case 'notOneOf':
-          watchedState.form.error = 'inList';
-          return;
-        default:
-          watchedState.form.error = 'unexpectedError';
-          return;
-      }
+      watchedState.form.error = err.type;
+      return;
     }
     watchedState.form.error = null;
-    watchedState.network.status = 'loading';
     watchedState.form.state = 'valid';
-    sendForm(url);
+    addFeed(url);
   });
 };
 

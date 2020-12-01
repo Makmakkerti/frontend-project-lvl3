@@ -14,6 +14,7 @@ const clearFeedback = (elements) => {
 };
 
 const showFeedbackError = (message, elements) => {
+  if (!message) return;
   elements.feedback.classList.remove('text-success');
   elements.feedback.classList.add('text-danger');
   elements.feedback.textContent = i18next.t(`errors.${message}`);
@@ -29,7 +30,15 @@ const enableForm = (elements) => {
   elements.formButton.disabled = false;
 };
 
-const renderForm = (status, elements) => {
+const changeFormState = (state, elements) => {
+  if (state === 'invalid') {
+    elements.formInput.classList.add('is-invalid');
+  } else {
+    elements.formInput.classList.remove('is-invalid');
+  }
+};
+
+const renderForm = (status, state, elements) => {
   clearForm(elements);
   switch (status) {
     case 'loading':
@@ -44,7 +53,7 @@ const renderForm = (status, elements) => {
       break;
     case 'failed':
       enableForm(elements);
-      showFeedbackError('invalidRss', elements);
+      showFeedbackError(state.form.error, elements);
       break;
     case 'unexpectedError':
       clearFeedback(elements);
@@ -118,9 +127,11 @@ const initView = (state) => {
       case 'posts':
         renderPosts(state, elements);
         break;
+      case 'form.state':
+        changeFormState(value, elements);
+        break;
       case 'form.error':
         if (value) {
-          elements.formInput.classList.add('border', 'border-danger');
           showFeedbackError(value, elements);
         } else {
           clearForm(elements);
@@ -128,16 +139,15 @@ const initView = (state) => {
         }
         break;
       case 'network.status':
-        renderForm(value, elements);
+        renderForm(value, state, elements);
         break;
       case 'network.error':
         if (value) {
+          enableForm(elements);
           showFeedbackError('network', elements);
         } else {
           clearFeedback(elements);
-          if (state.form.error) {
-            showFeedbackError(state.form.error, elements);
-          }
+          showFeedbackError(state.form.error, elements);
         }
         break;
 
