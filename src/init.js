@@ -31,6 +31,15 @@ const app = () => {
     },
   };
 
+  yup.setLocale({
+    string: {
+      url: i18next.t('errors.url'),
+    },
+    mixed: {
+      notOneOf: i18next.t('errors.notOneOf'),
+    },
+  });
+
   const watchedState = initView(state);
   const UPDATE_TIME = 5000;
 
@@ -76,7 +85,7 @@ const app = () => {
   const addFeed = (feedURL) => {
     watchedState.network.status = 'loading';
     watchedState.network.error = false;
-    const url = config.proxyURL + feedURL;
+    const url = `${config.proxyURL}${feedURL}`;
     axios.get(url)
       .then((response) => {
         const data = parse(response.data.contents, feedURL);
@@ -97,11 +106,11 @@ const app = () => {
           case 'Rss Error':
             watchedState.network.status = 'failed';
             watchedState.form.state = 'invalid';
-            watchedState.form.error = 'invalidRss';
+            watchedState.form.error = i18next.t('errors.invalidRss');
             break;
           default:
             watchedState.network.status = 'failed';
-            watchedState.form.error = 'unexpectedError';
+            watchedState.form.error = i18next.t('errors.unexpectedError');
         }
       });
   };
@@ -122,7 +131,7 @@ const app = () => {
       schema.validateSync(url);
     } catch (err) {
       watchedState.form.state = 'invalid';
-      watchedState.form.error = err.type;
+      watchedState.form.error = err.message;
       return;
     }
     watchedState.form.error = null;

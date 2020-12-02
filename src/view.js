@@ -17,7 +17,7 @@ const showFeedbackError = (message, elements) => {
   if (!message) return;
   elements.feedback.classList.remove('text-success');
   elements.feedback.classList.add('text-danger');
-  elements.feedback.textContent = i18next.t(`errors.${message}`);
+  elements.feedback.textContent = message;
 };
 
 const disableForm = (elements) => {
