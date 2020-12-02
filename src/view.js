@@ -57,7 +57,7 @@ const renderForm = (status, state, elements) => {
       break;
     case 'unexpectedError':
       clearFeedback(elements);
-      showFeedbackError('unexpected', elements);
+      showFeedbackError(i18next.t('errors.unexpected'), elements);
       break;
     default: break;
   }
@@ -144,7 +144,7 @@ const initView = (state) => {
       case 'network.error':
         if (value) {
           enableForm(elements);
-          showFeedbackError('network', elements);
+          showFeedbackError(i18next.t('errors.network'), elements);
         } else {
           clearFeedback(elements);
           showFeedbackError(state.form.error, elements);
