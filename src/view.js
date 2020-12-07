@@ -1,6 +1,11 @@
 /* eslint-disable no-param-reassign */
+import _ from 'lodash';
 import i18next from 'i18next';
 import onChange from 'on-change';
+
+const uiState = {
+  visitedPosts: [],
+};
 
 const clearForm = (elements) => {
   elements.formInput.classList.remove('border', 'border-danger');
@@ -36,6 +41,24 @@ const changeFormState = (state, elements) => {
   } else {
     elements.formInput.classList.remove('is-invalid');
   }
+};
+
+const makeVisited = (postId) => {
+  const { visitedPosts } = uiState;
+  if (_.includes(visitedPosts, postId)) return;
+  const link = document.querySelector(`a[data-id="${postId}"]`);
+  link.classList.remove('font-weight-bold');
+  link.classList.add('font-weight-normal');
+  uiState.visitedPosts = [...visitedPosts, postId];
+};
+
+const showModal = (postId, state, elements) => {
+  const post = _.find(state.posts, (el) => el.id === postId);
+  makeVisited(postId);
+  elements.modalTitle.textContent = post.title;
+  elements.modalBody.textContent = post.description;
+  elements.modalLinkToFull.setAttribute('href', post.link);
+  elements.modalLinkToFull.setAttribute('target', '_blank');
 };
 
 const renderForm = (status, state, elements) => {
@@ -76,10 +99,30 @@ const renderPosts = (state, elements) => {
   state.posts.forEach((post) => {
     const postItem = document.createElement('li');
     const link = document.createElement('a');
+    const button = document.createElement('button');
+
+    button.textContent = 'Preview';
+    button.classList.add('btn', 'btn-primary', 'btn-sm');
+    button.dataset.id = post.id;
+    button.dataset.toggle = 'modal';
+    button.dataset.target = '#modal';
+    button.addEventListener('click', () => showModal(post.id, state, elements));
+
     link.setAttribute('href', post.link);
     link.textContent = post.title;
-    postItem.classList.add('list-group-item');
+    link.dataset.id = post.id;
+    link.setAttribute('target', '_blank');
+    link.addEventListener('click', () => makeVisited(post.id));
+
+    if (!_.includes(uiState.visitedPosts, post.id)) {
+      link.classList.add('font-weight-bold');
+    } else {
+      link.classList.add('font-weight-normal');
+    }
+
+    postItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start');
     postItem.appendChild(link);
+    postItem.appendChild(button);
     postList.prepend(postItem);
   });
   posts.appendChild(postList);
@@ -96,11 +139,13 @@ const renderFeeds = (state, elements) => {
   feedList.classList.add('list-group', 'mb-5');
 
   state.feeds.forEach((feed) => {
-    const feedItem = document.createElement('li');
     const head = document.createElement('h3');
     head.textContent = feed.title;
+
     const desc = document.createElement('p');
     desc.textContent = feed.description;
+
+    const feedItem = document.createElement('li');
     feedItem.appendChild(head);
     feedItem.appendChild(desc);
     feedItem.classList.add('list-group-item');
@@ -117,6 +162,9 @@ const initView = (state) => {
     feedback: document.querySelector('.feedback'),
     feeds: document.querySelector('.feeds'),
     posts: document.querySelector('.posts'),
+    modalTitle: document.querySelector('#modal .modal-title'),
+    modalBody: document.querySelector('#modal .modal-body'),
+    modalLinkToFull: document.querySelector('#modal .full-article'),
   };
 
   const watchedState = onChange(state, (path, value) => {
