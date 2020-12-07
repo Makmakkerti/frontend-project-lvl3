@@ -25,21 +25,17 @@ const parsePost = (post) => {
 
 const parse = (data, url) => {
   const parser = new DOMParser();
-  try {
-    const parsedXML = parser.parseFromString(data, 'text/xml');
-    const channel = parsedXML.querySelector('channel');
-    const feed = parseFeed(channel, url);
-    const channelPosts = channel.querySelectorAll('item');
-    const parsedData = { feed, posts: [] };
+  const parsedXML = parser.parseFromString(data, 'text/xml');
+  const channel = parsedXML.querySelector('channel');
+  const feed = parseFeed(channel, url);
+  const channelPosts = channel.querySelectorAll('item');
+  const parsedData = { feed, posts: [] };
 
-    channelPosts.forEach((item) => {
-      const post = parsePost(item);
-      parsedData.posts.push(post);
-    });
-    return parsedData;
-  } catch (err) {
-    throw new Error('Rss Error');
-  }
+  channelPosts.forEach((item) => {
+    const post = parsePost(item);
+    parsedData.posts.push(post);
+  });
+  return parsedData;
 };
 
 export default parse;

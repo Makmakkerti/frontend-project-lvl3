@@ -60,10 +60,8 @@ const app = () => {
 
   const getNewPosts = (posts, feedId) => {
     const feedPosts = watchedState.posts.filter((el) => el.feedId === feedId);
-    const oldPostLinks = feedPosts.map((post) => post.link);
-    const newPosts = posts.filter((item) => !oldPostLinks.includes(item.link));
-    const newPostsWithID = assignPostsID(newPosts, feedId);
-    return newPostsWithID;
+    const newPosts = _.differenceBy(posts, feedPosts, 'link');
+    return assignPostsID(newPosts, feedId);
   };
 
   const updatePosts = (feed) => {
@@ -99,18 +97,18 @@ const app = () => {
         setTimeout(updatePosts, UPDATE_TIME, feed);
       })
       .catch((err) => {
-        switch (err.message) {
-          case 'Network Error':
+        switch (err.name) {
+          case 'Error':
             watchedState.network.error = true;
             break;
-          case 'Rss Error':
+          case 'TypeError':
             watchedState.network.status = 'failed';
             watchedState.form.state = 'invalid';
             watchedState.form.error = i18next.t('errors.invalidRss');
             break;
           default:
             watchedState.network.status = 'failed';
-            watchedState.form.error = i18next.t('errors.unexpectedError');
+            watchedState.form.error = i18next.t('errors.unexpected');
         }
       });
   };
