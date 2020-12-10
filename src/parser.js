@@ -24,18 +24,22 @@ const parsePost = (post) => {
 };
 
 const parse = (data, url) => {
-  const parser = new DOMParser();
-  const parsedXML = parser.parseFromString(data, 'text/xml');
-  const channel = parsedXML.querySelector('channel');
-  const feed = parseFeed(channel, url);
-  const channelPosts = channel.querySelectorAll('item');
-  const parsedData = { feed, posts: [] };
+  try {
+    const parser = new DOMParser();
+    const parsedXML = parser.parseFromString(data, 'text/xml');
+    const channel = parsedXML.querySelector('channel');
+    const feed = parseFeed(channel, url);
+    const channelPosts = channel.querySelectorAll('item');
+    const parsedData = { feed, posts: [] };
 
-  channelPosts.forEach((item) => {
-    const post = parsePost(item);
-    parsedData.posts.push(post);
-  });
-  return parsedData;
+    channelPosts.forEach((item) => {
+      const post = parsePost(item);
+      parsedData.posts.push(post);
+    });
+    return parsedData;
+  } catch (err) {
+    return null;
+  }
 };
 
 export default parse;
