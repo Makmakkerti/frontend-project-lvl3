@@ -1,19 +1,19 @@
-// @ts-check
+import { promises as fs } from 'fs';
+import path from 'path';
+import init from '../src/init';
 
-// import { promises as fs } from 'fs';
-// import path from 'path';
-// import init from '../src/init';
+beforeEach(() => {
+  const pathToHtml = path.resolve(__dirname, '__fixtures__/index.html');
+  return fs.readFile(pathToHtml, 'utf8')
+    .then((html) => {
+      document.body.innerHTML = html;
+    })
+    .catch((e) => {
+      console.log(e);
+    });
+});
 
-// // @ts-ignore
-// beforeEach(async () => {
-//   const pathToHtml = path.resolve(__dirname, '__fixtures__/index.html');
-//   const html = await fs.readFile(pathToHtml, 'utf8');
-//   document.body.innerHTML = html;
-// });
-
-// @ts-ignore
-// test('init', () => {
-//   init();
-//   // @ts-ignore
-//   expect(true).toBeDefined();
-// });
+test('init', () => {
+  init();
+  expect(true).toBeDefined();
+});
