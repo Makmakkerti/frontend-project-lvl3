@@ -1,4 +1,4 @@
-const parseFeed = (feed, url) => {
+export const parseFeed = (feed, url) => {
   const title = feed.querySelector('title').textContent;
   const description = feed.querySelector('description').textContent;
   const link = feed.querySelector('link').textContent;
@@ -11,7 +11,7 @@ const parseFeed = (feed, url) => {
   };
 };
 
-const parsePost = (post) => {
+export const parsePost = (post) => {
   const title = post.querySelector('title').textContent;
   const description = post.querySelector('description').textContent;
   const link = post.querySelector('link').textContent;
@@ -23,7 +23,9 @@ const parsePost = (post) => {
   };
 };
 
-const parse = (data, url) => {
+export const parsePosts = (items) => Array.from(items).map((item) => parsePost(item));
+
+export const parse = (data) => {
   try {
     const parser = new DOMParser();
     const parsedXML = parser.parseFromString(data, 'text/xml');
@@ -32,14 +34,8 @@ const parse = (data, url) => {
       parserError.isParserError = true;
       return parserError;
     }
-    const channel = parsedXML.querySelector('channel');
-    const feed = parseFeed(channel, url);
-    const channelPosts = channel.querySelectorAll('item');
-    const posts = Array.from(channelPosts).map((item) => parsePost(item));
-    return { feed, posts };
+    return parsedXML.querySelector('channel');
   } catch (err) {
     return err;
   }
 };
-
-export default parse;

@@ -7,9 +7,10 @@ import _ from 'lodash';
 import config from './config';
 import initView from './view';
 import en from './locales/en';
-import parse from './parser';
+import { parseFeed, parsePosts, parse } from './parser';
 
 const UPDATE_TIME = 5000;
+const getProxifiedURL = (url) => `${config.proxyURL}${url}`;
 
 const assignFeedID = (feed) => {
   feed.id = _.uniqueId('feed_');
@@ -25,8 +26,6 @@ const assignPostsID = (posts, feedId) => {
     });
   return postsWithID;
 };
-
-const getProxifiedURL = (url) => `${config.proxyURL}${url}`;
 
 const app = () => {
   i18next.init({
@@ -62,16 +61,17 @@ const app = () => {
       const watchedState = initView(state);
 
       const updatePosts = (feed) => {
-        const url = getProxifiedURL(feed.url);
-        axios.get(url)
+        axios.get(feed.url)
           .then((response) => {
-            const data = parse(response.data.contents, feed.url);
+            const { contents } = response.data;
+            const data = parse(contents);
             if (data instanceof Error) {
               throw data;
             }
 
+            const parsedPosts = parsePosts(data.querySelectorAll('item'));
             const feedPosts = watchedState.posts.filter((el) => el.feedId === feed.id);
-            const newPosts = _.differenceBy(data.posts, feedPosts, 'link');
+            const newPosts = _.differenceBy(parsedPosts, feedPosts, 'link');
             const newPostsWithId = assignPostsID(newPosts, feed.id);
             watchedState.posts.push(...newPostsWithId);
           })
@@ -87,6 +87,7 @@ const app = () => {
         watchedState.network.status = 'loading';
         watchedState.network.error = false;
         const url = getProxifiedURL(feedURL);
+        console.log(url);
         axios.get(url)
           .then((response) => {
             const { contents } = response.data;
@@ -94,8 +95,12 @@ const app = () => {
             if (data instanceof Error) {
               throw data;
             }
-            const feed = assignFeedID(data.feed);
-            const posts = assignPostsID(data.posts, feed.id);
+
+            const channel = parseFeed(data, url);
+            const parsedPosts = parsePosts(data.querySelectorAll('item'));
+
+            const feed = assignFeedID(channel);
+            const posts = assignPostsID(parsedPosts, feed.id);
             watchedState.feeds.unshift(feed);
             watchedState.posts.push(...posts);
             watchedState.network.status = 'success';
