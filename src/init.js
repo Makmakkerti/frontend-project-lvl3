@@ -145,6 +145,9 @@ const app = () => {
         watchedState.form.state = 'valid';
         addFeed(url);
       });
+    })
+    .catch((err) => {
+      throw err;
     });
 };
 
