@@ -11,7 +11,7 @@ export const parseFeed = (feed, url) => {
   };
 };
 
-export const parsePost = (post) => {
+const parsePost = (post) => {
   const title = post.querySelector('title').textContent;
   const description = post.querySelector('description').textContent;
   const link = post.querySelector('link').textContent;

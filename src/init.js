@@ -87,7 +87,7 @@ const app = () => {
         watchedState.network.status = 'loading';
         watchedState.network.error = false;
         const url = getProxifiedURL(feedURL);
-        console.log(url);
+
         axios.get(url)
           .then((response) => {
             const { contents } = response.data;
