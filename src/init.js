@@ -147,7 +147,7 @@ const app = () => {
       });
     })
     .catch((err) => {
-      throw err;
+      console.log(err);
     });
 };
 
