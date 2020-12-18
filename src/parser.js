@@ -1,4 +1,4 @@
-export const parseFeed = (feed) => {
+export const parseItem = (feed) => {
   const title = feed.querySelector('title').textContent;
   const description = feed.querySelector('description').textContent;
   const link = feed.querySelector('link').textContent;
@@ -10,19 +10,7 @@ export const parseFeed = (feed) => {
   };
 };
 
-const parsePost = (post) => {
-  const title = post.querySelector('title').textContent;
-  const description = post.querySelector('description').textContent;
-  const link = post.querySelector('link').textContent;
-
-  return {
-    title,
-    description,
-    link,
-  };
-};
-
-export const parsePosts = (items) => Array.from(items).map((item) => parsePost(item));
+export const parsePosts = (items) => Array.from(items).map((item) => parseItem(item));
 
 export const parse = (data) => {
   const parser = new DOMParser();

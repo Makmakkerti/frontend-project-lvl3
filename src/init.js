@@ -7,7 +7,7 @@ import _ from 'lodash';
 import config from './config';
 import initView from './view';
 import en from './locales/en';
-import { parseFeed, parsePosts, parse } from './parser';
+import { parseItem, parsePosts, parse } from './parser';
 
 const UPDATE_TIME = 5000;
 const getProxifiedURL = (url) => `${config.proxyURL}${url}`;
@@ -88,7 +88,7 @@ const app = () => {
           .then((response) => {
             const { contents } = response.data;
             const data = parse(contents, feedURL);
-            const channel = parseFeed(data);
+            const channel = parseItem(data);
             const parsedPosts = parsePosts(data.querySelectorAll('item'));
             const feed = assignFeedID(channel);
             feed.url = feedURL;
