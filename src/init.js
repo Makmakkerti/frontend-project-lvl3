@@ -12,11 +12,6 @@ import { parseItem, parsePosts, parse } from './parser';
 const UPDATE_TIME = 5000;
 const getProxifiedURL = (url) => `${config.proxyURL}${url}`;
 
-const assignFeedID = (feed) => {
-  feed.id = _.uniqueId('feed_');
-  return feed;
-};
-
 const assignPostsID = (posts, feedId) => {
   const postsWithID = posts
     .reverse()
@@ -61,7 +56,7 @@ const app = () => {
       const watchedState = initView(state);
 
       const updatePosts = (feed) => {
-        axios.get(feed.url)
+        axios.get(getProxifiedURL(feed.url))
           .then((response) => {
             const { contents } = response.data;
             const data = parse(contents);
@@ -82,16 +77,16 @@ const app = () => {
       const addFeed = (feedURL) => {
         watchedState.network.status = 'loading';
         watchedState.network.error = false;
-        const url = getProxifiedURL(feedURL);
 
-        axios.get(url)
+        axios.get(getProxifiedURL(feedURL))
           .then((response) => {
             const { contents } = response.data;
-            const data = parse(contents, feedURL);
-            const channel = parseItem(data);
-            const parsedPosts = parsePosts(data.querySelectorAll('item'));
-            const feed = assignFeedID(channel);
+            const data = parse(contents);
+            const feed = parseItem(data);
+
+            feed.id = _.uniqueId('feed_');
             feed.url = feedURL;
+            const parsedPosts = parsePosts(data.querySelectorAll('item'));
             const posts = assignPostsID(parsedPosts, feed.id);
 
             watchedState.feeds.unshift(feed);
