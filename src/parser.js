@@ -1,7 +1,7 @@
-export const parseItem = (feed) => {
-  const title = feed.querySelector('title').textContent;
-  const description = feed.querySelector('description').textContent;
-  const link = feed.querySelector('link').textContent;
+export const parseItem = (item) => {
+  const title = item.querySelector('title').textContent;
+  const description = item.querySelector('description').textContent;
+  const link = item.querySelector('link').textContent;
 
   return {
     title,
