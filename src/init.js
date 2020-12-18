@@ -65,10 +65,6 @@ const app = () => {
           .then((response) => {
             const { contents } = response.data;
             const data = parse(contents);
-            if (data instanceof Error) {
-              throw data;
-            }
-
             const parsedPosts = parsePosts(data.querySelectorAll('item'));
             const feedPosts = watchedState.posts.filter((el) => el.feedId === feed.id);
             const newPosts = _.differenceBy(parsedPosts, feedPosts, 'link');
@@ -92,19 +88,15 @@ const app = () => {
           .then((response) => {
             const { contents } = response.data;
             const data = parse(contents, feedURL);
-            if (data instanceof Error) {
-              throw data;
-            }
-
-            const channel = parseFeed(data, url);
+            const channel = parseFeed(data);
             const parsedPosts = parsePosts(data.querySelectorAll('item'));
-
             const feed = assignFeedID(channel);
+            feed.url = feedURL;
             const posts = assignPostsID(parsedPosts, feed.id);
+
             watchedState.feeds.unshift(feed);
             watchedState.posts.push(...posts);
             watchedState.network.status = 'success';
-
             watchedState.form.state = 'filling';
             setTimeout(updatePosts, UPDATE_TIME, feed);
           })
