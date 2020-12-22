@@ -7,7 +7,7 @@ import _ from 'lodash';
 import config from './config';
 import initView from './view';
 import en from './locales/en';
-import { parseItem, parsePosts, parse } from './parser';
+import parse from './parser';
 
 const UPDATE_TIME = 5000;
 const getProxifiedURL = (url) => `${config.proxyURL}${url}`;
@@ -59,11 +59,12 @@ const app = () => {
         axios.get(getProxifiedURL(feed.url))
           .then((response) => {
             const { contents } = response.data;
-            const data = parse(contents);
-            const parsedPosts = parsePosts(data.querySelectorAll('item'));
+            const { posts } = parse(contents);
+
             const feedPosts = watchedState.posts.filter((el) => el.feedId === feed.id);
-            const newPosts = _.differenceBy(parsedPosts, feedPosts, 'link');
+            const newPosts = _.differenceBy(posts, feedPosts, 'link');
             const newPostsWithId = assignPostsID(newPosts, feed.id);
+            console.log(newPostsWithId);
             watchedState.posts.push(...newPostsWithId);
           })
           .catch((err) => {
@@ -81,16 +82,12 @@ const app = () => {
         axios.get(getProxifiedURL(feedURL))
           .then((response) => {
             const { contents } = response.data;
-            const data = parse(contents);
-            const feed = parseItem(data);
-
+            const { feed, posts } = parse(contents);
             feed.id = _.uniqueId('feed_');
             feed.url = feedURL;
-            const parsedPosts = parsePosts(data.querySelectorAll('item'));
-            const posts = assignPostsID(parsedPosts, feed.id);
 
             watchedState.feeds.unshift(feed);
-            watchedState.posts.push(...posts);
+            watchedState.posts.push(...assignPostsID(posts, feed.id));
             watchedState.network.status = 'success';
             watchedState.form.state = 'filling';
             setTimeout(updatePosts, UPDATE_TIME, feed);
