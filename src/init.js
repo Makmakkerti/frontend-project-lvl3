@@ -64,7 +64,6 @@ const app = () => {
             const feedPosts = watchedState.posts.filter((el) => el.feedId === feed.id);
             const newPosts = _.differenceBy(posts, feedPosts, 'link');
             const newPostsWithId = assignPostsID(newPosts, feed.id);
-            console.log(newPostsWithId);
             watchedState.posts.push(...newPostsWithId);
           })
           .catch((err) => {
